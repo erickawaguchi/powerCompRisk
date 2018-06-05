@@ -14,7 +14,7 @@
 #' @examples
 #' library(powerCompRisk)
 #' powerCompRisk(alpha = 0.05, beta = 0.2, lambda_11 = 0.3, RR = 0.8,
-#' HR_1 = 1.44, HR_all = 1.33, attrition = 0.1, r = 1,f = 8, a1 = 0.5)
+#' HR_1 = 1.44, HR_all = 1.33, attrition = 0.1, r = 1, f = 8, a1 = 0.5)
 #' @references Yang, Q., Fung, W.K., Li, G. (2017) Sample size determination for jointly testing a cause-specific hazard and the any-cause hazard in the presence of competing risks. UCLA Department of Biostatistics Technical Report.
 #' @export
 #' @importFrom mvtnorm pmvnorm
@@ -36,7 +36,7 @@ powerCompRisk <- function(alpha, beta, lambda_11, RR, HR_1, HR_all, attrition, r
   # Parameters need to meet a constraint: HR_1 > RR * HR_all
   if (lambda_a2 < lambda_12) {
     print(NA)
-    break
+    stop("Parameters did not meet the contraint: HR_1 > RR * HR_all")
   }
 
   # Because attrition=lambda_c/(lambda_c+(lambda_a1+lambda_a2)/2), we have
@@ -46,13 +46,13 @@ powerCompRisk <- function(alpha, beta, lambda_11, RR, HR_1, HR_all, attrition, r
   ## Number of cause-1 failures required by the maximum joint test
   ##########################################################################
   ## Find c_m by solving the alpha equation
-  corr <- matrix(c(1, sqrt(RR), sqrt(RR), 1), nrow=2, ncol=2)
+  corr <- matrix(c(1, sqrt(RR), sqrt(RR), 1), nrow = 2, ncol = 2)
 
   cv <- function(x) {
     (1 - pmvnorm(c(-x, -x), c(x, x), c(0, 0), corr)) - alpha
   }
 
-  C_m <- uniroot(cv, c(0, 3), tol=0.0001)$root
+  C_m <- uniroot(cv, c(0, 3), tol = 0.0001)$root
 
   ## Find D by solving the beta/power equaiton
   cv2 <-function(x) {
@@ -91,8 +91,7 @@ powerCompRisk <- function(alpha, beta, lambda_11, RR, HR_1, HR_all, attrition, r
     P_12 <- lambda_12 / lambda_all2 * (1 - (exp(-lambda_all2 * f)))
     P_a1 <- lambda_a1 / lambda_all1 * (1 - (exp(-lambda_all1 * f)))
     P_a2 <- lambda_a2 / lambda_all2 * (1 - (exp(-lambda_all2 * f)))
-  }
-  else {
+  } else {
     P_11 <- lambda_11 / lambda_all1 * (1 - (exp(-lambda_all1 *(f -r)) - exp(-lambda_all1 * f)) / lambda_all1 * r)
     P_12 <- lambda_12 / lambda_all2 * (1 - (exp(-lambda_all2 *(f -r)) - exp(-lambda_all2 * f)) / lambda_all2 * r)
     P_a1 <- lambda_a1 / lambda_all1 * (1 - (exp(-lambda_all1 *(f -r)) - exp(-lambda_all1 * f)) / lambda_all1 * r)
